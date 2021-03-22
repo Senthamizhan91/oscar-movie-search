@@ -1,0 +1,60 @@
+{
+  "results":[
+    {
+      "year":2000,
+      "awards":4,
+      "isBestPicture":false,
+      "title":"Traffic",
+      "nominations":5,
+      "numberOfReferences":1485
+    },
+    {
+      "year":2001,
+      "awards":4,
+      "isBestPicture":true,
+      "title":"A Beautiful Mind",
+      "nominations":8,
+      "numberOfReferences":7415
+    },
+    {
+      "year":2000,
+      "awards":4,
+      "isBestPicture":false,
+      "title":"Crouching Tiger, Hidden Dragon",
+      "nominations":10,
+      "numberOfReferences":1142
+    },
+    {
+      "year":2003,
+      "awards":11,
+      "isBestPicture":true,
+      "title":"The Lord of the Rings: The Return of the King",
+      "nominations":11,
+      "numberOfReferences":1877
+    },
+    {
+      "year":2000,
+      "awards":5,
+      "isBestPicture":true,
+      "title":"Gladiator",
+      "nominations":12,
+      "numberOfReferences":2651
+    },
+    {
+      "year":2001,
+      "awards":4,
+      "isBestPicture":false,
+      "title":"The Lord of the Rings: The Fellowship of the Ring",
+      "nominations":13,
+      "numberOfReferences":1740
+    },
+    {
+      "year":2002,
+      "awards":6,
+      "isBestPicture":true,
+      "title":"Chicago",
+      "nominations":13,
+      "numberOfReferences":2281
+    }
+  ]
+}
