@@ -14,8 +14,6 @@ import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.propertytypes.ServiceDescription;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.servlet.Servlet;
 import java.io.IOException;
@@ -124,15 +122,9 @@ public class OscarFilmContainerServlet extends SlingSafeMethodsServlet {
 
     private static final long serialVersionUID = 1L;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OscarFilmContainerServlet.class);
+    private final Gson gson = new Gson();
 
-    private static final String JCR_PRIMARY_TYPE = "jcr:primaryType";
-
-    private static final String SLING_RESOURCE_TYPE = "sling:resourceType";
-
-    private Gson gson = new Gson();
-
-    private Map<String, Object> requestParamsMap = new HashMap<>();
+    private final Map<String, Object> requestParamsMap = new HashMap<>();
 
     @Override
     public void doGet(final SlingHttpServletRequest request, final SlingHttpServletResponse response) throws IOException {
@@ -181,13 +173,13 @@ public class OscarFilmContainerServlet extends SlingSafeMethodsServlet {
 
         for (Resource child : resource.getChildren()){
             ModifiableValueMap childValuemap = child.adaptTo(ModifiableValueMap.class);
-            boolean addToFilteredList = true;
+            boolean isReadyToAdd = true;
             for (Map.Entry<String, Object> entry1 : requestParamsMap.entrySet()) {
                 if (!StringUtils.contains(entry1.getKey(), OscarConstants.SORT_BY) && !StringUtils.contains(entry1.getKey(), OscarConstants.LIMIT)) {
-                    addToFilteredList = addToFilteredList && compareValues(entry1, childValuemap);
+                    isReadyToAdd = isReadyToAdd && compareValues(entry1, childValuemap);
                 }
             }
-            if (addToFilteredList) {
+            if (isReadyToAdd) {
                 addToValueMapSet(filteredValueMap, childValuemap, request);
             }
             if (requestParamsMap.get("limit") != null && filteredValueMap.size() >= (int) requestParamsMap.get("limit")) {
@@ -206,7 +198,6 @@ public class OscarFilmContainerServlet extends SlingSafeMethodsServlet {
             filteredValueMap.sort(Comparator.comparing((ModifiableValueMap map) -> map.get(OscarConstants.TITLE, String.class)));
         }
 
-        System.out.println("Value map size is " + filteredValueMap.size());
         return gson.toJson(filteredValueMap);
     }
 
@@ -218,29 +209,31 @@ public class OscarFilmContainerServlet extends SlingSafeMethodsServlet {
      */
     private boolean compareValues(Map.Entry<String, Object> entry, ModifiableValueMap childValuemap) {
         String compareKey = StringUtils.EMPTY;
-        if (StringUtils.equalsIgnoreCase(entry.getKey(), OscarConstants.TITLE)) {
-            return OscarUtils.compareString(childValuemap.get(OscarConstants.TITLE, String.class), entry.getValue().toString());
-        }
-        if (StringUtils.equalsIgnoreCase(entry.getKey(), OscarConstants.YEAR)) {
-            return OscarUtils.compareInteger(childValuemap.get(OscarConstants.YEAR, Integer.class), (int) entry.getValue());
-        }
-        if (StringUtils.equalsIgnoreCase(entry.getKey(), OscarConstants.MIN_YEAR)) {
-            return OscarUtils.compareMinValue(childValuemap.get(OscarConstants.YEAR, Integer.class), (int) entry.getValue());
-        }
-        if (StringUtils.equalsIgnoreCase(entry.getKey(), OscarConstants.MAX_YEAR)) {
-            return OscarUtils.compareMaxValue(childValuemap.get(OscarConstants.YEAR, Integer.class), (int) entry.getValue());
-        }
-        if (StringUtils.equalsIgnoreCase(entry.getKey(), OscarConstants.MIN_AWARDS)) {
-            return OscarUtils.compareMinValue(childValuemap.get("awards", Integer.class), (int) entry.getValue());
-        }
-        if (StringUtils.equalsIgnoreCase(entry.getKey(), OscarConstants.MAX_AWARDS)) {
-            return OscarUtils.compareMaxValue(childValuemap.get("awards", Integer.class), (int) entry.getValue());
-        }
-        if (StringUtils.equalsIgnoreCase(entry.getKey(), OscarConstants.NOMINATIONS)) {
-            return OscarUtils.compareInteger(childValuemap.get(OscarConstants.NOMINATIONS, Integer.class), (int) entry.getValue());
-        }
-        if (StringUtils.equalsIgnoreCase(entry.getKey(), OscarConstants.IS_BEST_PICTURE)) {
-            return childValuemap.get(OscarConstants.IS_BEST_PICTURE, Boolean.class) == (Boolean) entry.getValue() ? true : false;
+        if (childValuemap != null) {
+            if (StringUtils.equalsIgnoreCase(entry.getKey(), OscarConstants.TITLE)) {
+                return OscarUtils.compareString(childValuemap.get(OscarConstants.TITLE, String.class), entry.getValue().toString());
+            }
+            if (StringUtils.equalsIgnoreCase(entry.getKey(), OscarConstants.YEAR)) {
+                return OscarUtils.compareInteger(childValuemap.get(OscarConstants.YEAR, Integer.class), (int) entry.getValue());
+            }
+            if (StringUtils.equalsIgnoreCase(entry.getKey(), OscarConstants.MIN_YEAR)) {
+                return OscarUtils.compareMinValue(childValuemap.get(OscarConstants.YEAR, Integer.class), (int) entry.getValue());
+            }
+            if (StringUtils.equalsIgnoreCase(entry.getKey(), OscarConstants.MAX_YEAR)) {
+                return OscarUtils.compareMaxValue(childValuemap.get(OscarConstants.YEAR, Integer.class), (int) entry.getValue());
+            }
+            if (StringUtils.equalsIgnoreCase(entry.getKey(), OscarConstants.MIN_AWARDS)) {
+                return OscarUtils.compareMinValue(childValuemap.get("awards", Integer.class), (int) entry.getValue());
+            }
+            if (StringUtils.equalsIgnoreCase(entry.getKey(), OscarConstants.MAX_AWARDS)) {
+                return OscarUtils.compareMaxValue(childValuemap.get("awards", Integer.class), (int) entry.getValue());
+            }
+            if (StringUtils.equalsIgnoreCase(entry.getKey(), OscarConstants.NOMINATIONS)) {
+                return OscarUtils.compareInteger(childValuemap.get(OscarConstants.NOMINATIONS, Integer.class), (int) entry.getValue());
+            }
+            if (StringUtils.equalsIgnoreCase(entry.getKey(), OscarConstants.IS_BEST_PICTURE)) {
+                return childValuemap.get(OscarConstants.IS_BEST_PICTURE, Boolean.class) == (Boolean) entry.getValue();
+            }
         }
 
         return false;
@@ -254,7 +247,9 @@ public class OscarFilmContainerServlet extends SlingSafeMethodsServlet {
      */
     private void addToValueMapSet(List<ModifiableValueMap> filteredList, ModifiableValueMap childValuemap, SlingHttpServletRequest req) {
 
-        childValuemap.entrySet().removeIf(entry -> StringUtils.startsWith(entry.getKey(), "jcr:") || StringUtils.startsWith(entry.getKey(), "sling:"));
+        if (childValuemap != null) {
+            childValuemap.entrySet().removeIf(entry -> StringUtils.startsWith(entry.getKey(), "jcr:") || StringUtils.startsWith(entry.getKey(), "sling:"));
+        }
 
         String limit = req.getParameter(OscarConstants.LIMIT);
         if (limit != null && filteredList.size() < Integer.parseInt(limit)) {
@@ -262,20 +257,6 @@ public class OscarFilmContainerServlet extends SlingSafeMethodsServlet {
         } else {
             filteredList.add(childValuemap);
         }
-    }
-
-    /**
-     * Checks for the limit parameter and returns true if the value can be added to the final result
-     * @param request
-     * @param currentSize
-     * @return true
-     */
-    private boolean checkLimit(SlingHttpServletRequest request, int currentSize) {
-        String limit = request.getParameter(OscarConstants.LIMIT);
-        if (limit != null) {
-            return currentSize < Integer.parseInt(limit) ? true : false;
-        }
-        return true;
     }
 
     private void getFilterParams(String param, SlingHttpServletRequest req) {
