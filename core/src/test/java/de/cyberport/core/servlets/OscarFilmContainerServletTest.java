@@ -196,7 +196,6 @@ class OscarFilmContainerServletTest {
 
         final Map<String, Object> requestParams = new HashMap<>();
         requestParams.put("minAwards", 4);
-        //requestParams.put("minYear", "2003");
         requestParams.put("year", -1);
         requestParams.put("sortBy", OscarSortBy.nominations);
         request.setParameterMap(requestParams);

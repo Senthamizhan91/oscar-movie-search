@@ -163,14 +163,15 @@ public class OscarFilmContainerServlet extends SlingSafeMethodsServlet {
     }
 
     /**
-     * Main logic of filtering and sorting the request happens on this method
-     * @param request
-     * @return
+     * Main logic of filtering and sorting the resources based on the request parameters
+     * @param request The Sling request
+     * @return Filtered list of valuemap
      */
     private String getfilteredJson(SlingHttpServletRequest request) {
         List<ModifiableValueMap> filteredValueMap = new ArrayList<>();
         Resource resource= request.getResource();
 
+        //The below logic can also be simplified by using JCR SQL2 query with which we can pass parameters for filtering and sorting
         for (Resource child : resource.getChildren()){
             ModifiableValueMap childValuemap = child.adaptTo(ModifiableValueMap.class);
             boolean isReadyToAdd = true;
@@ -202,7 +203,7 @@ public class OscarFilmContainerServlet extends SlingSafeMethodsServlet {
     }
 
     /**
-     * Compares each valuemap properties with the request parameter and return boolean
+     * Compares each valuemap properties with the request parameters and return boolean
      * @param entry
      * @param childValuemap
      * @return true
@@ -259,6 +260,11 @@ public class OscarFilmContainerServlet extends SlingSafeMethodsServlet {
         }
     }
 
+    /**
+     * Method to get and add the request parameters to a map
+     * @param param Parameter to get from the request
+     * @param req Sling request
+     */
     private void getFilterParams(String param, SlingHttpServletRequest req) {
         String parameter = req.getParameter(param);
         if (parameter != null) {
